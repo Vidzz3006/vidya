@@ -1,0 +1,88 @@
+
+
+SQUID : 
+    caching and forwarding HTTP web proxy.
+    which is used to speed up aa web server by 
+    caching repeated requests , caching web , 
+    DNS & filtering traffic
+
+# yum install squid -y
+# apt install squid -y
+
+# systemctl restart squid 
+# systemctl status squid 
+# systemctl enable squid
+
+
+firewall-cmd --zone=public --add-service=public --permanent
+firewall-cmd --reload
+
+
+
+Change the configuration file to add or remove acl rule from the squid
+ACL = access control list
+
+    # vi /etc/squid/squid.conf
+    
+        # --- stop internet for the ip or range of IP
+        # ip for second device ip : 192.168.144.135
+
+        acl banned src 192.168.144.135
+        # http_access deny banned
+
+
+        # ip for this device :  192.168.144.136
+
+        # ---- allow internet access for all the ip range ---
+
+        acl inter-allow src 192.168.144.0/24
+        http_access allow inter-allow
+
+
+        # ------------- change the responce header ---
+
+        forwarded_for delete
+
+        # ------ change the host name that want to show on the responce header
+        visible_hostname lost
+
+
+        # configure cache for squid
+
+        cache_dir ufs /var/spool/squid 1500 19 256
+
+        # assign cache memory
+
+        cache_mem 200 MB
+
+
+        # max size for an object
+
+        maximum_object_size 300 MB
+
+        # max size for cache file that will store in /var/spool/squid
+        maximum_object_size_in_memory 5 KB
+
+        # rule for cache to store some kind of data of file type
+
+        acl images_cache url_regex -i .*\.(jpg|css|jpeg|icon|gif)
+        cache allow images_cache
+
+
+    > every time changes in rule 
+    > do 
+    # squid -k check
+    # squid -k parse 
+    # squid -k reconfigure
+
+    > first time when cache configuration add in /etc/squid/squid.conf 
+    # systemctl resart squid
+
+
+    > check log in real time 
+    # tail -f /var/log/squid/access.log
+
+
+
+    # curl -x 192.168.144.136:3128 http://testphp.vulnweb.com -I
+                squid ip               website                 response header

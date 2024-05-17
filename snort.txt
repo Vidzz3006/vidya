@@ -1,0 +1,26 @@
+apt install snort
+
+sed -i 's/^include $RULE_PATH/#include $RULE_PATH/' /etc/snort/snort.conf
+
+vi /etc/snort/snort.conf
+home net network of the ip
+
+uncomment include $RULE_PATH local.rule
+
+cd /etc/snort/rules/loacl.rules
+
+alert ip any any -> any any (msg:"ip alert"; sid:100001; rev:1; )
+
+alert icmp any any -> $HOME_NET any (msg:"icmp alert "; sid:100002 ; rev:1; )
+
+allow ip any any -> 192.168.144.1-100 any (msg:"ip allow" ; sid :100003 ; rev:1;  content:"ssh" )
+
+
+
+# test
+# snort -T -i ens33 -c /etc/snort/snort.conf
+
+
+
+# console
+# snort -A console -q -i ens33 -c /etc/snort/snort.conf

@@ -1,0 +1,416 @@
+Basic firewall commands
+	current State 
+		# firewall-cmd --state
+
+	check Zones 
+		# firewall-cmd --get-zones
+
+		# ls /usr/lib/firewalld/zones
+ 
+	default Zones
+		# firewall-cmd --get-default-zone 
+
+	active zone with Iterface 
+		# firewall-cmd --get-active-zones
+	
+	list all rule of active Zone
+		# firewall-cmd --list-all
+
+		[osboxes@localhost ~]$ firewall-cmd --zone=public --list-all
+			public (active)
+ 				 target: default
+ 				 icmp-block-inversion: no
+ 				 interfaces: ens160
+				 sources: 
+ 				 services: cockpit dhcpv6-client telnet
+				 ports: 
+				 protocols: 
+ 				 forward: yes
+				 masquerade: no
+ 				 forward-ports: 
+				 source-ports: 
+ 				 icmp-blocks: 
+ 				 rich rules: 
+	
+	list all rules of zones that we want to see
+		# firewall-cmd --zone=dmz --list-all
+	
+	change the interface of the Zonex
+		# firewall-cmd --zone=dmz --change-interface=ens33
+		# firewall-cmd --zone=dmz --add-interface=ens33
+		# firewall-cmd --zone=dmz --remove-interface=ens33
+		# firewall-cmd --zone=dmz --list-interface
+	
+	
+	make Permanent 
+		# firewall-cmd --zone=dmz --change-interface=ens33
+		# anything and then --permanet
+		# firewall-cmd --reload	
+	
+	create new Zone
+		# firewall-cmd --new-zone=hpcsa --permanent 
+		# firewall-cmd --reload
+
+		# firewall-cmd --set-default-zone=hpcsa --permanent
+		# firewall-cmd --reload
+		
+		# firewall-cmd --add-interface=ens33 --permanent
+		# firewall-cmd  --delete-zone=hpcsa --permanet
+
+	add or remove Services 
+		# firewall-cmd --zone=public --add-service=ssh --permanent
+		# firewall-cmd --zone=public --add-service={http,https} --permanent
+		
+		# firewall-cmd --zone=public --remove-service=ssh --permanent
+		# firewall-cmd --zone=public --remove-service={http,https} --permanent
+
+	add or remove Port
+		# firewall-cmd --zone=public --add-port=2020/tcp --permanent
+		# firewall-cmd --zone=public --add-port=8080/udp --add-port=4040/tcp --permanent
+
+		# firewall-cmd --zone=public --remove-port=2020/tcp --permanent
+		# firewall-cmd --zone=public --remove-port=8080/udp --add-port=4040/tcp --permanent
+
+
+
+
+
+Rich Rules: 
+	
+	accept , reject or drop particular system or IP 
+		
+	# firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.91.102/32" reject' --permanent
+											IP / IP range       accept or drop
+	#  firewall-cmd --reload
+	
+	# firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.91.102/32" service name="ssh" reject' --permanent
+											IP / IP range           services name  accept or drop      
+	   
+
+
+	# firewall-cmd --zone=public 
+		--add-rich-rule=                            
+		'rule					    			: starting of rule
+		family="ipv4"                           : ipv4 or ipv6
+		source address="192.168.91.102/32"      : ip or range of ip
+		service name="ssh"			    		: telnet , ssh , http
+		limit value="1/m" 			    		: 1 per minute or hour sec 
+		accept'                                 : drop , accept or reject   & end of rule
+		--permanent
+		
+		
+		
+		
+
+
+
+Panic mode : 
+	# firewall-cmd --panic-on
+
+	# firewall-cmd --panic-off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wireshark :
+```````````
+Logical operator:
+``````````````````
+1. and or && : Logical AND [ all the condition should match ]
+2. or or ||  : Logical OR [Either all or one should match ]
+3. xor or ^^ : Logical XOR [ Exclusive alteration - only one of the two condition match not both]
+4. not or ! : Not [ Not equal to ]
+
+Filtering packets [display filter]:
+```````````````````````````````````
+eq or == : equal [ ip.dst == x.x.x.x ]
+ne or != : Not equal [ ip.dst != x.x.x.x ]
+gt or >  : Greater than [ frame.len > 10 ]
+it or <  : less than [ frame.len < 10 ]
+ge or >=  : Greater than or equal [ frame.len >= 10 ]
+le or <=  : Less than or equal [ frame.len <= 10 ]
+
+Common filtering commands:
+``````````````````````````
+Filter by IP:
+`````````````
+ip.addr == x.x.x.x
+
+filter by dst IP:
+`````````````````
+ip.dst == x.x.x.x
+
+Filter by source IP:
+````````````````````
+ip.src == x.x.x.x
+
+Filter by IP range:
+````````````````````
+ip.addr >= x.x.x.1 and ip.addr <= x.x.x.100
+
+Filter by multiple IPs:
+```````````````````````
+ip.addr == x.x.x.1 && ip.addr == x.x.x.100
+
+Filter by subnet:
+`````````````````
+ip.addr == 10.0.0.0/24
+
+Filter by port:
+````````````````
+tcp.port == 25
+
+Filter by dst port:
+`````````````````````
+tcp.dstport == 23
+
+Filter by IP addr and port:
+```````````````````````````
+ip.addr == x.x.x.x and tcp.port == 25
+
+Filter by URL:
+``````````````
+http.host == "hostname"
+
+Filter by SYN flag:
+```````````````````
+tcp.flags.syn == 1
+tcp.flags.syn == 1 and tcp.flags.ack == 0
+
+
+
+
+
+WIRESHARK 
+
+
+
+
+TCPDUMP
+
+tcpdump is a most powerful and widely used command-line packets sniffer or package analyzer tool which is used to capture or filter TCP/IP packets that are received or transferred over a network on a specific interface.
+
+How to Install tcpdump in Linux
+``````````
+# apt install tcpdump  [On Debian, Ubuntu]
+# yum install tcpdump  [On RHEL/CentOS/Fedora]
+
+
+	1. Capture Packets from Specific Interface
+	``````````````````````````````````````````
+	# tcpdump -i ens33
+
+
+	2. Capture Only N Number of Packets
+	````````````````````````````````````
+	# tcpdump -c 5 -i ens33
+
+
+	3. Print Captured Packets in ASCII
+	```````````````````````````````````
+	# tcpdump -A -i ens33
+
+
+	4. Display Available Interfaces
+	````````````````````````````````
+	# tcpdump -D
+
+
+	5. Display Captured Packets in HEX and ASCII
+	`````````````````````````````````````````````
+	# tcpdump -XX -i ens33
+
+
+	6. Capture and Save Packets in a File
+	``````````````````````````````````````
+	# tcpdump -w 0001.pcap -i ens33
+
+
+	7. Read Captured Packets File
+	`````````````````````````````
+	# tcpdump -r 0001.pcap
+
+
+	8. Capture IP Address Packets
+	``````````````````````````````
+	# tcpdump -n -i ens33
+
+
+	9. Capture only TCP Packets
+	````````````````````````````
+	# tcpdump -i ens33 tcp
+
+
+	10. Capture Packet from Specific Port
+	`````````````````````````````````````
+	# tcpdump -i ens33 port 22
+
+
+	11. Capture Packets from source IP
+	``````````````````````````````````
+	# tcpdump -i ens33 src x.x.x.x
+
+
+	12. Capture Packets from destination IP
+	````````````````````````````````````````
+	# tcpdump -i eth0 dst x.x.x.x
+
+
+	13. Capture all packets in any interface
+	`````````````````````````````````````````
+	# tcpdump -i any
+
+
+	14. Capture specific host
+	``````````````````````````
+	# tcpdump -i ens33 host x.x.x.x
+
+
+	15. Complex expressions
+	````````````````````````
+	# tcpdump -i lo src 127.0.0.1 and port 80
+
+	# tcpdump -i lo "port 80 and (src x.x.x.x or src x.x.x.x)"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TASK:
+The Basic HTTP GET response interaction:
+````````````````````````````````````````
+Steps:
+``````
+1. Start up your web browser
+2. Start up the Wireshark packet sniffer
+3. Enter “http” (just the letters, not the quotation marks) in the display-filter-specification window
+4. only captured HTTP messages will be displayed later in the packet-listing window, We’re only interested in the HTTP protocol here, and don’t want to see the clutter of all captured packets.
+5. Wait a bit more than one minute (we’ll see why shortly), and then begin Wireshark packet capture.
+6. Enter the following to your browser:
+	http://example.com/
+Your browser should display the very simple HTML page.
+7. Stop Wireshark packet capture.
+8. Now trace the HTTP packets for above domain and answer following:
+	a. Is your browser running HTTP version 1.0 or 1.1? What version of HTTP is the server running?
+	b. What is the IP address of your computer? Of the example.com server?
+	c. What is the status code returned from the server to your browser?
+
+
+
+
+
+TASK
+
+
+	 Can you plz complete the following?
+ Analyze PCAP
+
+Analyze Sample PCAP
+Report back the following samples (HTTP, DNS, FTP,  SMTP)
+
+SMTP:
+`````
+Who is the client?                          gurpartap@patriots.in       10.10.1.4
+Who is the server? 							mail.pariots.in             74.53.140.153
+What is the subject of the mail? 			SMTP
+Who are the recipients?                     raj_deol2002@yahoo.co.in
+What is the body of the email?
+what is username & password ?               gurpartap@patriots.in       punjab@123
+
+FTP:
+Who is the client?					81.131.67.131
+Who is the server?					210.146.64.4
+What is the ftp directory?
+Is any data getting exchanged?
+
+
+DNS:
+Who is the client?                  192.168.170.8
+Who is the server?					192.168.170.20
+What is the dns request?			www.netbsd.org  151.101.65.6
+
+
+HTTP:
+Who is the client?
+Who is the server?
+What is the web server version/type?
+What page is getting requested?
+
+
+
+
+
+
+TASK:
+``````
+1. Exploring Network Traces:
+````````````````````````````
+
+NOTE: Security analysts and attackers both frequently study network traffic to search for vulnerabilities and to characterize network behavior. 
+
+In this task, you will search for specific vulnerable behaviors and extract relevant details using the Wireshark network analyzer.
+
+Analyse "data-task2.pcap" and Provide concise answers to the following questions. Each response should require at most 2â€“3 sentences. 
+
+Q1. Multiple hosts sent packets on the local network. What are their MAC and IP addresses? [easy]
+
+Q2. What type of network does this appear to be (e.g., a large corporation, an ISP backbone, etc.)? Point to evidence from the trace that supports this. [intermediate]
+
+Q3. One of the clients connects to an FTP server during the trace: [intermediate]
+
+	a. What is the DNS hostname of the server it connects to?
+	b. Is the connection using Active or Passive FTP?
+	c. Based on the packet capture, whatâ€™s one major vulnerability of the FTP protocol?
+	d. Name at least two network protocols that can be used in place of FTP to provide secure file transfer.
+
+Q4. The trace shows that at least one of the clients makes HTTPS connections to sites other than Facebook. Pick one of these connections and answer the following: [intermediate]
+
+	a. What is the domain name of the site the client is connecting to?
+	b. Is there any way the HTTPS server can protect against the leak of information in (a)?
+	
+Q5. One of the clients makes a number of requests to Facebook: [easy]
+
+	a. Even though logins are processed over HTTPS, what is insecure about the way the browser is authenticated to Facebook?
+	b. How would this let an attacker impersonate the user on Facebook?
+	c. How can users protect themselves against this type of attack?
+	d. What did the user do while on the Facebook site?
+
+
+
+
